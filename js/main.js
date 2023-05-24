@@ -1,10 +1,11 @@
 var dsct = new DSCT();
+var validation = new Validation();
 
 function getEle(id) {
     return document.getElementById(id);
   }
 
-function layThongTinCT(){
+function layThongTinCT(isAdd){
     var _tknv = getEle("tknv").value;
     var _name = getEle("name").value;
     var _email = getEle("email").value;
@@ -13,6 +14,67 @@ function layThongTinCT(){
     var _luongCB = getEle("luongCB").value;
     var _chucvu = getEle("chucvu").value;
     var _gioLam = getEle("gioLam").value;
+
+  /**
+   * Validation
+   */
+  var isValid = true;
+
+  if (isAdd) {
+    //Validation TKNV
+    isValid &=
+      validation.kiemTraRong(_tknv, "tbTKNV", "(*) Vui long nhap tai khoan") &&
+      validation.kiemTraDoDaiKiTu(
+        _tknv,
+        "tbTKNV",
+        "(*) Vui long nhap 4 - 10 ki tu",
+        4,
+        10
+      ) &&
+      validation.kiemTraTKNVTonTai(
+        _tknv,
+        "tbTKNV",
+        "(*) Ma SV da ton tai!",
+        dsct.arr
+      );
+  }
+
+  //Validation Ten
+  isValid &=
+    validation.kiemTraRong(_name, "tbTen", "(*) Vui long nhap TenSV") &&
+    validation.kiemTraChuoiKiTu(
+      _name,
+      "tbTen",
+      "(*) Vui long nhap chuoi ki tu"
+    );
+
+  //Validation Email
+  isValid &=
+    validation.kiemTraRong(_email, "tbEmail", "(*) Vui long nhap Email") &&
+    validation.kiemTraPattern(
+      _email,
+      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      "tbEmail",
+      "(*) Vui long nhap Email hop le!"
+    );
+
+  //Validation MatKhau
+  isValid &=
+    validation.kiemTraRong(
+        _password,
+      "tbMatKhau",
+      "(*) Vui long nhap MatKhau"
+    ) &&
+    validation.kiemTraPattern(
+        _password,
+      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{0,}$/,
+      "tbMatKhau",
+      "(*) Vui long nhap MatKhau hop le!"
+    );
+
+
+  if (!isValid) return null;
+
 
 
 
@@ -26,12 +88,12 @@ function layThongTinCT(){
         _chucvu,
         _gioLam
     );
-
+    ct.xepLoai();
     ct.tinhTongLuong();
     return ct;
 }
 
-function rederTable(data){
+function renderTable(data){
     var content = "";
     for (var i = 0; i < data.length; i++){
         var ct = data[i];
@@ -58,12 +120,12 @@ function rederTable(data){
 
 function deleteCT(tknv){
     dsct.xoaCT(tknv);
-    rederTable(dsct.arr);
+    renderTable(dsct.arr);
     setLocalStorage();
 }
 
 function editCT(tknv){
-    var ct = dsct.suaCT(tknv);
+    var ct = dsct.layThongTinCT(tknv);
     if(ct){
         getEle("tknv").value = ct.tknv;
         getEle("tknv").disabled = true;
@@ -83,24 +145,29 @@ getEle("btnCapNhat").addEventListener("click", function (event){
     event.preventDefault();
     var ct = layThongTinCT(false);
     dsct.capNhatCT(ct);
-    rederTable(dsct.arr);
+    renderTable(dsct.arr);
     setLocalStorage();
 })
 
 getEle("btnThemNV").addEventListener("click", function (event) {
     event.preventDefault();
     var ct = layThongTinCT(true);
-    if(ct == null) return;
-    dsct.themCT(ct);
-    rederTable(dsct.arr);
-    setLocalStorage();
+    if(ct){
+        dsct.themCT(ct);
+        renderTable(dsct.arr);
+        setLocalStorage();
+    }
 })
 
 function setLocalStorage(){
+    var dataString = JSON.stringify(dsct.arr);
+    localStorage.setItem("DSCT", dataString);
+}
+
+function getLocalStorage(){
     if(localStorage.getItem("DSCT")){
         var dataString = localStorage.getItem("DSCT");
-        var dataJson = JSON.parse(dataString);
-        dsct.arr = dataJson;
+        dsct.arr = JSON.parse(dataString);
         renderTable(dsct.arr);
     }
 };

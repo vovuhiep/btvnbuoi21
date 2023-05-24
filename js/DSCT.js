@@ -1,14 +1,15 @@
 function DSCT() {
     this.arr = [];
+
     this.themCT = function(ct){
         this.arr.push(ct);
     }
     this.timViTri = function (tknv){
         var index = -1;
-        for (var i = 0; i < dsct.arr.length; i++){
+        for (var i = 0; i < this.arr.length; i++){
             var ct = this.arr[i];
-            if(ct.tknv === tkvn){
-                index = -1;
+            if(ct.tknv === tknv){
+                index = i;
                 break;
             }
         }
@@ -18,10 +19,10 @@ function DSCT() {
     this.xoaCT = function (tknv){
         var index = this.timViTri(tknv);
         if(index !== -1){
-            this.arr.splice(index , 1);
+            this.arr.splice(index, 1);
         };
     };
-    this.suaCT = function(tknv){
+    this.layThongTinCT = function(tknv){
         var index = this.timViTri(tknv);
         if (index !== -1){
             return this.arr[index];
